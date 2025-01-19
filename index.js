@@ -1,22 +1,18 @@
 import { Server } from "bittorrent-tracker";
 import express from "express";
 import dotenv from "dotenv";
-import morgan from "morgan";
 import { register } from 'prom-client';
 import { checkTorrent, bannedIPs } from "./src/utils/utils.js";
 import { torrentRouter } from "./src/torrent/torrent.router.js";
+import { setupMorgan, logMessage } from "./src/utils/utils.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-let accessLogStream
-if (process.env.NODE_ENV === 'production') {
-  accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
-}
+setupMorgan(app);
 
-app.use(morgan('combined', { stream: accessLogStream }))
 app.use("/api/torrent", torrentRouter);
 app.get("/metrics", async (req,res) => {
   res.set("Content-Type", register.contentType)
@@ -43,11 +39,11 @@ app.get("/announce", onHttpRequest);
 app.get("/scrape", onHttpRequest);
 
 process.on('SIGINT', () => {
-  console.log(`\nBye bye!`);
+  logMessage("info", `\nBye bye!`);
   process.exit(0);
 })
 
 
 app.listen(expressPort, () => {
-  console.log(`Torrent Tracker running at ${expressPort}`);
+  logMessage("info", `Torrent Tracker running at ${expressPort}`);
 });

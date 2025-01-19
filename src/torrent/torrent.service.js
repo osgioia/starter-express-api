@@ -1,4 +1,5 @@
 import { db } from "../utils/db.server.js";
+import { logMessage } from "../utils/utils.js";
 import magnet from 'magnet-uri';
 
 async function addTorrent(infoHash, name, category, tags) {
@@ -11,9 +12,9 @@ async function addTorrent(infoHash, name, category, tags) {
         tags: { create: tags.split(",").map((tag) => ({ name: tag })) },
       },
     });
-    console.log("Torrent added");
+    logMessage("info", "Torrent added");
   } catch (error) {
-    console.error("Error to add torrent:", error);
+    logMessage("error", `Error to add torrent:${error.message}`);
   } finally {
     await db.$disconnect();
   }
@@ -33,7 +34,7 @@ async function getTorrent(infoHash, hostname) {
     })
     return uri
   } catch (error) {
-    console.error(error);
+    logMessage("error", `Error to get torrents:${error.message}`);
     res.status(500).json({ error: "Error in get Torrent" });
   } finally {
     await db.$disconnect();
@@ -46,9 +47,9 @@ async function updateTorrent(id, data) {
       where: { id },
       data,
     });
-    console.log("Torrent updated:", updatedTorrent);
+    logMessage("log", `Torrent updated: ${updatedTorrent}`);
   } catch (error) {
-    console.error("Error to update torrent:", error);
+    logMessage("error", `Error to update torrent:${error.message}`);
   } finally {
     await db.$disconnect();
   }
@@ -59,9 +60,9 @@ async function deleteTorrent(id) {
     await db.torrent.delete({
       where: { id },
     });
-    console.log("Torrent deleted");
+    logMessage("info", "Torrent deleted");
   } catch (error) {
-    console.error("Error to delete torrent:", error);
+    logMessage("error", `Error to delete torrent: ${error.message}`);
   } finally {
     await db.$disconnect();
   }
